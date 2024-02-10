@@ -1,30 +1,78 @@
 import json
 import streamlit as st
 import pandas as pd
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+
+st.set_page_config(layout="wide")
 
 
-with open("all_ads.json", "r") as f:
-    all_ads = json.load(f)
+def lire_fichier_ndjson(chemin_fichier):
+    with open(chemin_fichier, "r") as f:
+        for ligne in f:
+            yield json.loads(ligne)
+
+
+@st.cache_resource
+def charger_annonces():
+    return list(lire_fichier_ndjson("json_files/all_ads.json"))
+
+
+def rendre_liens_cliquables(df, nom_colonne_url):
+    df[nom_colonne_url] = df[nom_colonne_url].apply(
+        lambda x: f'<a href="{x}" target="_blank">{x}</a>'
+    )
+    return df
+
+
+all_ads = charger_annonces()
+with open("json_files/first_ad.json", "w") as f:
+    json.dump(all_ads[0], f, indent=4)
+surface_minimale = st.number_input(
+    "Surface habitable minimale (en m²)", min_value=0, value=50
+)
+prix_maximal = st.number_input("Prix maximal", min_value=0, value=50000)
+nombre_pieces_minimal = st.number_input(
+    "Nombre minimal de pièces", min_value=0, value=2
+)
+annee_construction_minimale = st.number_input(
+    "Année de construction minimale", min_value=0, value=1950
+)
+classe_energetique = st.selectbox(
+    "Classe énergétique", ["A", "B", "C", "D", "E", "F", "G"], index=3
+)
 
 critères_selection = {
-    "bien_type_label": ["maison", "appartement"],  # Types de biens recherchés
-    "bien_surf_habitable.Int64": 40,  # Surface habitable minimale en m²
-    "prix_achat": 50000,  # Prix maximal
-    "bien_nb_piece.Int64": 2,  # Nombre minimal de pièces
-    "bien_annee_construction.String": 2000,  # Année de construction minimale
-    "bien_dpe.String": "C",  # Classe énergétique
+    "bien_surf_habitable.Int64": surface_minimale,
+    "prix_achat": prix_maximal,
+    "bien_nb_piece.Int64": nombre_pieces_minimal,
+    "bien_annee_construction.String": annee_construction_minimale,
+    "bien_dpe.String": classe_energetique,
 }
+
+
+def classe_energetique_superieure(classe_annonce, classe_critere):
+    ordre_classes = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5, "G": 6}
+    return ordre_classes[classe_annonce] <= ordre_classes[classe_critere]
 
 
 def filtrer_annonces(annonces, critères):
     annonces_filtrees = []
     for annonce in annonces:
+        annonce = annonce["results"]["annonces"][0]
         surface = annonce.get("bien_surf_habitable", {}).get("Int64", 0)
-        nb_pieces = annonce.get("bien_nb_piece", 0).get("Int64", 0)
-        annee_construction = int(
-            annonce.get("bien_annee_construction", 0).get("String", "0")
-        )
+        nb_pieces = annonce.get("bien_nb_piece", 0)
+        if type(nb_pieces) == dict:
+            nb_pieces = nb_pieces.get("Int64", 0)
+        annee_construction = annonce.get("bien_annee_construction", 0)
+        if type(annee_construction) == dict:
+            annee_construction = annee_construction.get("String", 0)
+        try:
+            annee_construction = int(annee_construction)
+        except ValueError:
+            annee_construction = 9999
         dpe = annonce.get("bien_dpe", {}).get("String", "")
+        if not dpe:
+            dpe = "A"
         tete1_age = annonce.get("tete1_age", 0)
         tete2_age = (
             annonce.get("tete2_age", {}).get("Int64", 0)
@@ -32,13 +80,11 @@ def filtrer_annonces(annonces, critères):
             else 0
         )
         age_min_occupant = min(tete1_age, tete2_age) if tete2_age != 0 else tete1_age
-
         if (
-            annonce["bien_type_label"] in critères["bien_type_label"]
-            and surface >= critères["bien_surf_habitable.Int64"]
+            surface >= critères["bien_surf_habitable.Int64"]
             and annonce["mandat_bouquet_fai"]["Int64"] <= critères["prix_achat"]
             and nb_pieces >= critères["bien_nb_piece.Int64"]
-            and dpe == critères["bien_dpe.String"]
+            and classe_energetique_superieure(dpe, critères["bien_dpe.String"])
             and annee_construction >= critères["bien_annee_construction.String"]
         ):
             rentabilites = {}
@@ -48,6 +94,7 @@ def filtrer_annonces(annonces, critères):
 
                 cout_total = (
                     annonce["mandat_bouquet_fai"]["Int64"]
+                    + annonce["mandat_frais_agence"]
                     + (annonce["mandat_rente"]["Int64"] * mois)
                     + (
                         (
@@ -76,18 +123,54 @@ def filtrer_annonces(annonces, critères):
                 "frais_agence": annonce["mandat_frais_agence"],
                 "bien_nb_piece": nb_pieces,
                 "bien_annee_construction": annee_construction,
-                "vente_type_is_libre": annonce["vente_type_is_libre"],
                 "bien_dpe": dpe,
             }
-            if res["rentabilite_a_100_ans"] > 0:
+            if res["rentabilite_a_100_ans"] > 0 and not annonce["vendu"]:
                 annonces_filtrees.append(res)
     return annonces_filtrees
 
 
 annonces_filtrees = filtrer_annonces(all_ads, critères_selection)
-with open("annonces_filtrees.json", "w") as f:
+
+css_style = """
+<style>
+.table-container {
+  overflow-x: auto;
+}
+</style>
+"""
+
+
+with open("json_files/annonces_filtrees.json", "w") as f:
     json.dump(annonces_filtrees, f, indent=4)
 
-df = pd.read_json("annonces_filtrees.json")
+df = pd.read_json("json_files/annonces_filtrees.json")
+
 st.title("Annonces filtrées")
-st.write(df)
+st.write(f"Nombre total d'annonces : {len(all_ads)}")
+st.write(f"Nombre d'annonces après filtrage : {len(annonces_filtrees)}")
+gb = GridOptionsBuilder.from_dataframe(df)
+gb.configure_default_column(minWidth=100, resizable=True)
+gb.configure_column("bien_surf_habitable", minWidth=150)
+gb.configure_column("prix_achat", minWidth=150)
+gb.configure_column("mandat_bouquet", minWidth=120)
+gb.configure_column("prix estimation", minWidth=130)
+gb.configure_column("link")
+
+gb.configure_selection("single")
+gridOptions = gb.build()
+
+grid_response = AgGrid(
+    df,
+    gridOptions=gridOptions,
+    update_mode=GridUpdateMode.SELECTION_CHANGED,
+    fit_columns_on_grid_load=False,
+    height=600,
+    allow_unsafe_jscode=True,
+)
+
+selected = grid_response["selected_rows"]
+if selected:
+    selected_row = selected[0]
+    link = selected_row["link"]
+    st.markdown(f"[Cliquez ici pour ouvrir l'annonce]({link})", unsafe_allow_html=True)
