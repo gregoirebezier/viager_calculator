@@ -25,6 +25,8 @@ def rendre_liens_cliquables(df, nom_colonne_url):
 
 
 all_ads = charger_annonces()
+all_ads = [json.loads(x) for x in set(json.dumps(x) for x in all_ads)]
+
 with open("json_files/first_ad.json", "w") as f:
     json.dump(all_ads[0], f, indent=4)
 surface_minimale = st.number_input(
@@ -72,7 +74,7 @@ def filtrer_annonces(annonces, critères):
             annee_construction = 9999
         dpe = annonce.get("bien_dpe", {}).get("String", "")
         if not dpe:
-            dpe = "A"
+            dpe = ""
         tete1_age = annonce.get("tete1_age", 0)
         tete2_age = (
             annonce.get("tete2_age", {}).get("Int64", 0)
@@ -84,7 +86,10 @@ def filtrer_annonces(annonces, critères):
             surface >= critères["bien_surf_habitable.Int64"]
             and annonce["mandat_bouquet_fai"]["Int64"] <= critères["prix_achat"]
             and nb_pieces >= critères["bien_nb_piece.Int64"]
-            and classe_energetique_superieure(dpe, critères["bien_dpe.String"])
+            and (
+                dpe == ""
+                or classe_energetique_superieure(dpe, critères["bien_dpe.String"])
+            )
             and annee_construction >= critères["bien_annee_construction.String"]
         ):
             rentabilites = {}
@@ -125,7 +130,11 @@ def filtrer_annonces(annonces, critères):
                 "bien_annee_construction": annee_construction,
                 "bien_dpe": dpe,
             }
-            if res["rentabilite_a_100_ans"] > 0 and not annonce["vendu"]:
+            if (
+                res["rentabilite_a_100_ans"] > 0
+                and not annonce["vendu"]
+                and annonce["vente_status"] != "vente en cours"
+            ):
                 annonces_filtrees.append(res)
     return annonces_filtrees
 
@@ -155,7 +164,7 @@ gb.configure_column("bien_surf_habitable", minWidth=150)
 gb.configure_column("prix_achat", minWidth=150)
 gb.configure_column("mandat_bouquet", minWidth=120)
 gb.configure_column("prix estimation", minWidth=130)
-gb.configure_column("link")
+gb.configure_column("link", hide=True)
 
 gb.configure_selection("single")
 gridOptions = gb.build()

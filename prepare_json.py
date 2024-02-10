@@ -91,18 +91,30 @@ def parse_sitemap(save_path):
         sitemap = xmltodict.parse(file.read())
     for sitemap in sitemap["urlset"]["url"]:
         if "pieces-" in sitemap["loc"]:
-            with open("dossiers_ids.txt", "a") as file:
+            with open("txt_files/dossiers_ids.txt", "a") as file:
                 file.write(sitemap["loc"].split("pieces-")[1] + "\n")
+
+
+def keep_unique_ads():
+    with open("txt_files/dossiers_ids.txt", "r") as file:
+        urls = file.readlines()
+    urls = list(set(urls))
+    with open("txt_files/dossiers_ids.txt", "w") as file:
+        file.writelines(urls)
 
 
 def main():
     download_sitemap(sitemap_index_url, "sitemaps/sitemap.xml")
     parse_sitemap("sitemaps/sitemap.xml")
+    keep_unique_ads()
     with open("txt_files/dossiers_ids.txt", "r") as file:
         urls = file.readlines()
+    input(
+        "Etes-vous sûr de vouloir télécharger les annonces ? Cette opération peut prendre un certain temps. Appuyez sur Entrée pour continuer."
+    )
     open("json_files/all_ads.json", "w").close()
     with ThreadPoolExecutor() as executor:
-        for index, dossier_id in enumerate(urls):
+        for dossier_id in urls:
             dossier_id = int(dossier_id.replace("\n", "").strip())
             executor.submit(get_ad_infos, dossier_id)
         executor.shutdown(wait=True)
