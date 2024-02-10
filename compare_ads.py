@@ -13,7 +13,7 @@ def lire_fichier_ndjson(chemin_fichier):
 
 @st.cache_resource
 def extraire_departements_filtres(annonces_filtrees):
-    return sorted({annonce["departement"] for annonce in annonces_filtrees})
+    return sorted({annonce["departement"]+" "+annonce["bien_departement_label"] for annonce in annonces_filtrees})
 
 
 @st.cache_resource
@@ -30,7 +30,7 @@ def rendre_liens_cliquables(df, nom_colonne_url):
 def filtrer_par_departement(annonces_filtrees, departements_selectionnes):
     if not departements_selectionnes:
         return annonces_filtrees
-    return [annonce for annonce in annonces_filtrees if annonce["departement"] in departements_selectionnes]
+    return [annonce for annonce in annonces_filtrees if annonce["departement"]+" "+annonce["bien_departement_label"] in departements_selectionnes]
 
 
 all_ads = charger_annonces()
@@ -144,6 +144,7 @@ def filtrer_annonces(annonces, critères):
                 "bien_annee_construction": annee_construction,
                 "bien_dpe": dpe,
                 "departement": annonce["bien_departement_code"],
+                "bien_departement_label": annonce["bien_departement_label"],
             }
             if (
                 res["rentabilite_a_100_ans"] > 0
