@@ -11,6 +11,10 @@ def lire_fichier_ndjson(chemin_fichier):
         for ligne in f:
             yield json.loads(ligne)
 
+@st.cache_resource
+def extraire_departements_filtres(annonces_filtrees):
+    return sorted({annonce["departement"] for annonce in annonces_filtrees})
+
 
 @st.cache_resource
 def charger_annonces():
@@ -23,9 +27,18 @@ def rendre_liens_cliquables(df, nom_colonne_url):
     )
     return df
 
+def filtrer_par_departement(annonces_filtrees, departements_selectionnes):
+    if not departements_selectionnes:
+        return annonces_filtrees
+    return [annonce for annonce in annonces_filtrees if annonce["departement"] in departements_selectionnes]
+
 
 all_ads = charger_annonces()
 all_ads = [json.loads(x) for x in set(json.dumps(x) for x in all_ads)]
+
+
+if 'departements_selectionnes' not in st.session_state:
+    st.session_state['departements_selectionnes'] = []
 
 with open("json_files/first_ad.json", "w") as f:
     json.dump(all_ads[0], f, indent=4)
@@ -42,6 +55,7 @@ annee_construction_minimale = st.number_input(
 classe_energetique = st.selectbox(
     "Classe énergétique", ["A", "B", "C", "D", "E", "F", "G"], index=3
 )
+
 
 critères_selection = {
     "bien_surf_habitable.Int64": surface_minimale,
@@ -91,7 +105,7 @@ def filtrer_annonces(annonces, critères):
                 or classe_energetique_superieure(dpe, critères["bien_dpe.String"])
             )
             and annee_construction >= critères["bien_annee_construction.String"]
-        ):
+            ):
             rentabilites = {}
             for age_fin_de_vie in [90, 95, 100]:
                 annees = age_fin_de_vie - age_min_occupant
@@ -129,6 +143,7 @@ def filtrer_annonces(annonces, critères):
                 "bien_nb_piece": nb_pieces,
                 "bien_annee_construction": annee_construction,
                 "bien_dpe": dpe,
+                "departement": annonce["bien_departement_code"],
             }
             if (
                 res["rentabilite_a_100_ans"] > 0
@@ -140,6 +155,20 @@ def filtrer_annonces(annonces, critères):
 
 
 annonces_filtrees = filtrer_annonces(all_ads, critères_selection)
+
+departements_filtres = extraire_departements_filtres(annonces_filtrees)
+
+valid_defaults = [dept for dept in st.session_state['departements_selectionnes'] if dept in departements_filtres]
+
+departements_selectionnes = st.multiselect(
+    "Sélectionnez le(s) département(s)",
+    options=departements_filtres,
+    default=valid_defaults
+)
+
+st.session_state['departements_selectionnes'] = departements_selectionnes
+
+annonces_filtrees = filtrer_par_departement(annonces_filtrees, departements_selectionnes)
 
 css_style = """
 <style>
@@ -155,7 +184,7 @@ with open("json_files/annonces_filtrees.json", "w") as f:
 
 df = pd.read_json("json_files/annonces_filtrees.json")
 
-st.title("Annonces filtrées")
+st.title("Annonces filtrées (uniquement rentables sur 100 ans)")
 st.write(f"Nombre total d'annonces : {len(all_ads)}")
 st.write(f"Nombre d'annonces après filtrage : {len(annonces_filtrees)}")
 gb = GridOptionsBuilder.from_dataframe(df)
