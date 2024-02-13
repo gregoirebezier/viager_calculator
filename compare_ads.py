@@ -5,6 +5,8 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 st.set_page_config(layout="wide")
 
+if 'departements_selectionnes' not in st.session_state:
+    st.session_state['departements_selectionnes'] = []
 
 def lire_fichier_ndjson(chemin_fichier):
     with open(chemin_fichier, "r") as f:
@@ -159,17 +161,17 @@ annonces_filtrees = filtrer_annonces(all_ads, critères_selection)
 
 departements_filtres = extraire_departements_filtres(annonces_filtrees)
 
-valid_defaults = [dept for dept in st.session_state['departements_selectionnes'] if dept in departements_filtres]
-
 departements_selectionnes = st.multiselect(
     "Sélectionnez le(s) département(s)",
     options=departements_filtres,
-    default=valid_defaults
+    default=st.session_state['departements_selectionnes']
 )
 
-st.session_state['departements_selectionnes'] = departements_selectionnes
-
-annonces_filtrees = filtrer_par_departement(annonces_filtrees, departements_selectionnes)
+if st.button('Appliquer les filtres'):
+    st.session_state['departements_selectionnes'] = departements_selectionnes
+    annonces_filtrees = filtrer_par_departement(annonces_filtrees, departements_selectionnes)
+else:
+    annonces_filtrees = filtrer_par_departement(annonces_filtrees, st.session_state['departements_selectionnes'])
 
 css_style = """
 <style>
