@@ -42,8 +42,8 @@ all_ads = [json.loads(x) for x in set(json.dumps(x) for x in all_ads)]
 if 'departements_selectionnes' not in st.session_state:
     st.session_state['departements_selectionnes'] = []
 
-with open("json_files/first_ad.json", "w") as f:
-    json.dump(all_ads[0], f, indent=4)
+# with open("json_files/first_ad.json", "w") as f:
+#     json.dump(all_ads[0], f, indent=4)
 surface_minimale = st.number_input(
     "Surface habitable minimale (en m²)", min_value=0, value=50
 )
