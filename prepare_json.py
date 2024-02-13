@@ -1,6 +1,7 @@
 # /usr/bin/env python3
 import json
 import os
+import hashlib
 import requests
 from decouple import config
 import xmltodict
@@ -24,6 +25,53 @@ HEADERS = {
 PROXY_SERVER = config("PROXY_SERVER")
 PROXIES = {"http": PROXY_SERVER, "https": PROXY_SERVER}
 json_lock = threading.Lock()
+
+
+def hash_file(filepath):
+    """Calcule le hash SHA256 d'un fichier."""
+    sha256_hash = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
+
+def compare_and_download_sitemap(url, save_path):
+    """Compare et télécharge le sitemap si différent, puis extrait les URLs nouvelles."""
+    new_sitemap_path = save_path + "_new"
+    download_sitemap(url, new_sitemap_path)
+
+    if os.path.exists(save_path) and hash_file(save_path) == hash_file(new_sitemap_path):
+        print("Le sitemap n'a pas changé.")
+        os.remove(new_sitemap_path)
+    else:
+        print("Le sitemap a changé. Mise à jour en cours.")
+        extract_new_urls(save_path, new_sitemap_path)
+        os.replace(new_sitemap_path, save_path)
+
+def extract_new_urls(old_sitemap_path, new_sitemap_path):
+    """Extrait et sauvegarde les nouvelles URLs."""
+    old_urls = set()
+    new_urls = set()
+
+    if os.path.exists(old_sitemap_path):
+        with open(old_sitemap_path, "r") as file:
+            old_sitemap = xmltodict.parse(file.read())
+            for url in old_sitemap["urlset"]["url"]:
+                old_urls.add(url["loc"])
+
+    with open(new_sitemap_path, "r") as file:
+        new_sitemap = xmltodict.parse(file.read())
+        for url in new_sitemap["urlset"]["url"]:
+            new_urls.add(url["loc"])
+
+    added_urls = new_urls - old_urls
+    if added_urls:
+        with open("new_urls.txt", "w") as file:
+            for url in added_urls:
+                urls_id = url.split("pieces-")[1]
+                file.write(urls_id + "\n")
+        print(f"{len(added_urls)} nouvelles URLs ont été ajoutées.")
 
 
 def get_ad_infos(dossier_id):
@@ -58,7 +106,7 @@ def get_ad_infos(dossier_id):
         "https://www.costes-viager.com/api_se/annonces2",
         json=query,
         headers=header,
-        proxies=PROXIES,
+        # proxies=PROXIES,
     )
     with json_lock:
         json_r = response.json()
@@ -104,21 +152,29 @@ def keep_unique_ads():
 
 
 def main():
-    download_sitemap(sitemap_index_url, "sitemaps/sitemap.xml")
+    compare_and_download_sitemap(sitemap_index_url, "sitemaps/sitemap.xml")
     parse_sitemap("sitemaps/sitemap.xml")
     keep_unique_ads()
-    with open("txt_files/dossiers_ids.txt", "r") as file:
+    urls = []
+    temp = 0
+    with open("txt_files/new_urls.txt", "r") as file:
         urls = file.readlines()
-    input(
-        "Etes-vous sûr de vouloir télécharger les annonces ? Cette opération peut prendre un certain temps. Appuyez sur Entrée pour continuer."
-    )
-    open("json_files/all_ads.json", "w").close()
+        temp = 1
+    if not urls:
+        with open("txt_files/dossiers_ids.txt", "r") as file:
+            urls = file.readlines()
+        return 0 # On a déjà téléchargé les annonces
     with ThreadPoolExecutor() as executor:
         for dossier_id in urls:
             dossier_id = int(dossier_id.replace("\n", "").strip())
             executor.submit(get_ad_infos, dossier_id)
         executor.shutdown(wait=True)
-
+    if temp == 1:
+        open("txt_files/new_urls.txt", "w").close()
+        with open("txt_files/dossiers_ids.txt", "a") as file:
+            for url in urls:
+                file.write(url.replace("\n", "").strip() + "\n")
+    print("Toutes les annonces ont été téléchargées.")
 
 if __name__ == "__main__":
     main()
