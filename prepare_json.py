@@ -67,10 +67,11 @@ def extract_new_urls(old_sitemap_path, new_sitemap_path):
 
     added_urls = new_urls - old_urls
     if added_urls:
-        with open("new_urls.txt", "w") as file:
+        with open("txt_files/new_urls.txt", "w") as file:
             for url in added_urls:
-                urls_id = url.split("pieces-")[1]
-                file.write(urls_id + "\n")
+                if "pieces-" in url:
+                    urls_id = url.split("pieces-")[1]
+                    file.write(urls_id + "\n")
         print(f"{len(added_urls)} nouvelles URLs ont été ajoutées.")
 
 
