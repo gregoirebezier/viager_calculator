@@ -62,6 +62,8 @@ argent_par_mois = st.number_input(
     "Argent disponible par mois (en €)", min_value=0, value=500
 )
 
+age_rentabilite = st.number_input("Âge pour évaluer la rentabilité", min_value=75, max_value=100, value=100, step=1)
+
 critères_selection = {
     "bien_surf_habitable.Int64": surface_minimale,
     "prix_achat": prix_maximal,
@@ -69,6 +71,7 @@ critères_selection = {
     "bien_nb_piece.Int64": nombre_pieces_minimal,
     "bien_annee_construction.String": annee_construction_minimale,
     "bien_dpe.String": classe_energetique,
+    "age_rentabilite": age_rentabilite,
 }
 
 
@@ -77,7 +80,7 @@ def classe_energetique_superieure(classe_annonce, classe_critere):
     return ordre_classes[classe_annonce] <= ordre_classes[classe_critere]
 
 
-def filtrer_annonces(annonces, critères):
+def filtrer_annonces(annonces, critères, age_rentabilite):
     annonces_filtrees = []
     for annonce in annonces:
         annonce = annonce["results"]["annonces"][0]
@@ -114,7 +117,8 @@ def filtrer_annonces(annonces, critères):
             and annee_construction >= critères["bien_annee_construction.String"]
             ):
             rentabilites = {}
-            for age_fin_de_vie in [90, 95, 100]:
+            all_rentabilites = sorted([age_rentabilite, 90, 95, 100])
+            for age_fin_de_vie in all_rentabilites:
                 annees = age_fin_de_vie - age_min_occupant
                 mois = max(annees * 12, 0)
 
@@ -153,8 +157,9 @@ def filtrer_annonces(annonces, critères):
                 "departement": annonce["bien_departement_code"],
                 "bien_departement_label": annonce["bien_departement_label"],
             }
+            renta = "rentabilite_a_" + str(age_rentabilite) + "_ans"
             if (
-                res["rentabilite_a_100_ans"] > 0
+                res[renta] > 0
                 and not annonce["vendu"]
                 and annonce["vente_status"] != "vente en cours"
             ):
@@ -162,7 +167,7 @@ def filtrer_annonces(annonces, critères):
     return annonces_filtrees
 
 
-annonces_filtrees = filtrer_annonces(all_ads, critères_selection)
+annonces_filtrees = filtrer_annonces(all_ads, critères_selection, age_rentabilite)
 
 departements_filtres = extraire_departements_filtres(annonces_filtrees)
 
@@ -192,7 +197,7 @@ with open("json_files/annonces_filtrees.json", "w") as f:
 
 df = pd.read_json("json_files/annonces_filtrees.json")
 
-st.title("Annonces filtrées (uniquement rentables sur 100 ans)")
+st.title("Annonces filtrées (uniquement rentables sur " + str(age_rentabilite) + " ans)")
 st.write(f"Nombre total d'annonces : {len(all_ads)}")
 st.write(f"Nombre d'annonces après filtrage : {len(annonces_filtrees)}")
 gb = GridOptionsBuilder.from_dataframe(df)
