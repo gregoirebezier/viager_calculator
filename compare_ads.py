@@ -137,6 +137,7 @@ def filtrer_annonces(annonces, critères):
                 **rentabilites,
                 "mandat_bouquet": annonce["mandat_bouquet_fai"]["Int64"],
                 "argent_par_mois": annonce["mandat_rente"]["Int64"],
+                "taxe_fonciere": annonce["bien_taxe_fonciere"]["Int64"],
                 "link": "https://www.costes-viager.com"
                 + annonce["url_path_alternative"],
                 "bien_type_label": annonce["bien_type_label"],
@@ -145,7 +146,6 @@ def filtrer_annonces(annonces, critères):
                 "prix estimation": annonce["vlb_displayed"],
                 "decote": annonce["mandat_decote_percent"],
                 "ordures_menageres": annonce["bien_ordure_menagere"]["Int64"],
-                "taxe_fonciere": annonce["bien_taxe_fonciere"]["Int64"],
                 "frais_agence": annonce["mandat_frais_agence"],
                 "bien_nb_piece": nb_pieces,
                 "bien_annee_construction": annee_construction,

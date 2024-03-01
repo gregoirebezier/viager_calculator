@@ -1,0 +1,312 @@
+{
+    "results": {
+        "labels": null,
+        "annonces": [
+            {
+                "id": 36472,
+                "dossier_id": 422342064,
+                "enabled": true,
+                "allow_csite": false,
+                "date_modif": {
+                    "String": "",
+                    "Valid": false
+                },
+                "bien_type_id": 1,
+                "bien_type_label": "appartement",
+                "bien_type_art_partitif": {
+                    "String": "de l'",
+                    "Valid": true
+                },
+                "bien_type_art_partitif_sep": {
+                    "String": "",
+                    "Valid": true
+                },
+                "bien_sous_type_label": {
+                    "String": "triplex",
+                    "Valid": true
+                },
+                "vente_type_is_libre": false,
+                "vente_type_is_reserve_fructus": false,
+                "vente_type_is_a_terme": false,
+                "vente_type_label": "Viager occupé",
+                "vente_type_id": 8,
+                "tete1_sexe": "H",
+                "tete1_age": 70,
+                "tete2_sexe": {
+                    "String": "",
+                    "Valid": false
+                },
+                "tete2_age": {
+                    "Int64": 0,
+                    "Valid": false
+                },
+                "vendeur_nb": 0,
+                "bien_nb_piece": {
+                    "Int64": 5,
+                    "Valid": true
+                },
+                "bien_nb_etage": {
+                    "Int64": 2,
+                    "Valid": true
+                },
+                "bien_total_etage": {
+                    "Int64": 2,
+                    "Valid": true
+                },
+                "bien_nb_niveau": {
+                    "Int64": 0,
+                    "Valid": false
+                },
+                "bien_surf_habitable": {
+                    "Int64": 127,
+                    "Valid": true
+                },
+                "bien_surf_terrain": {
+                    "Int64": 0,
+                    "Valid": false
+                },
+                "bien_annee_construction": {
+                    "String": "1991",
+                    "Valid": true
+                },
+                "bien_charge_trimestriele": {
+                    "Int64": 0,
+                    "Valid": true
+                },
+                "bien_taxe_fonciere": {
+                    "Int64": 2441,
+                    "Valid": true
+                },
+                "bien_ordure_menagere": {
+                    "Int64": 386,
+                    "Valid": true
+                },
+                "bien_nb_lots": {
+                    "Int64": 0,
+                    "Valid": false
+                },
+                "bien_cep": {
+                    "Int64": 183,
+                    "Valid": true
+                },
+                "bien_ges": {
+                    "Int64": 38,
+                    "Valid": true
+                },
+                "bien_dpe": {
+                    "String": "D",
+                    "Valid": true
+                },
+                "bien_info_commodites": {
+                    "Map": {
+                        "cave": {
+                            "String": "1",
+                            "Valid": true
+                        }
+                    }
+                },
+                "bien_info_proximites": {
+                    "Map": {
+                        "centre ville": {
+                            "String": "1",
+                            "Valid": true
+                        },
+                        "commerces": {
+                            "String": "1",
+                            "Valid": true
+                        },
+                        "hopital": {
+                            "String": "1",
+                            "Valid": true
+                        }
+                    }
+                },
+                "bien_info_transports": {
+                    "Map": {
+                        "bus": {
+                            "String": "1",
+                            "Valid": true
+                        }
+                    }
+                },
+                "bien_commune_postale_cp": "42100",
+                "bien_commune_postale_acheminement": "ST ETIENNE",
+                "bien_commune_id": 16239,
+                "bien_commune_label": "Saint-Etienne",
+                "bien_commune_ncc": "SAINT-ETIENNE",
+                "bien_commune_label_url": "saint-etienne",
+                "bien_commune_population": 177480,
+                "bien_departement_id": 41,
+                "bien_departement_code": "42",
+                "bien_departement_label": "Loire",
+                "bien_departement_ncc": "LOIRE",
+                "bien_departement_label_url": "loire",
+                "bien_region_id": 22,
+                "bien_region_label": "Rhône-Alpes",
+                "bien_region_ncc": "RHONE-ALPES",
+                "bien_region_label_url": "rhone-alpes",
+                "bien_cuisine_type_label": {
+                    "String": "américaine",
+                    "Valid": true
+                },
+                "bien_cuisine_is_equiped": {
+                    "Bool": true,
+                    "Valid": true
+                },
+                "bien_chauffage_generateur_label": {
+                    "String": "chaudiére individuelle",
+                    "Valid": true
+                },
+                "bien_chauffage_energie_label": {
+                    "String": "gaz de ville",
+                    "Valid": true
+                },
+                "bien_chauffage_emetteur_label": {
+                    "String": "radiateur",
+                    "Valid": true
+                },
+                "bien_assainissement_label": {
+                    "String": "collectif (tout à l'égoût)",
+                    "Valid": true
+                },
+                "bien_adresse_random_lat": {
+                    "Float64": 45.41996785,
+                    "Valid": true
+                },
+                "bien_adresse_random_lon": {
+                    "Float64": 4.40460877,
+                    "Valid": true
+                },
+                "bien_adresse_random_lat_preview": "",
+                "bien_adresse_random_lon_preview": "",
+                "annonce_description_bien": "L’ENVIRONNEMENT : \n\n\nSitué en plein cœur de la Loire en région Auvergne Rhône Alpes, Saint-Étienne est une ville attractive et étudiante bénéficiant d’un cadre naturel privilégié, d’une économie favorable et d’une belle richesse culturelle. Comptant plus de 174 000 habitants et 2400 commerces, sont également présent tous les transports ( gare, bus tramway et aéroport) pour une mobilité optimale. En offrant un cadre de vie agréable et peu onéreux, la ville de Saint-Étienne a su brillamment redorer son blason au fil des années.\n\n\nLE BIEN : \n\n\nSitué à Saint-Étienne à 2 pas du quartier Bellevue dans un secteur calme proche des transports et en commun et des commodités.\n\n Bel appartement T5 de 126 m² en excellent état et très bien entretenu sur 3 niveaux R+2. Comprenant :\n\n\nRDC : Un joli hall d’entée avec placard, un WC et un accès à la cave.\n\n\nÉtage 1 : Un beau séjour avec cuisine ouverte équipée et une belle pièce aménagée en bureau avec cellier.\n\n\n\nÉtage 2 : Un très beau coin nuit se composant de 3 chambres, une belle salle de bain avec douche et WC.\n\n\n\n\n Ce bien compte également 1 annexe : une cave.\n\n",
+                "annonce_description_vente": {
+                    "String": "Saint-Étienne est la grande ville la moins chère de France. Elle propose une excellente rentabilité locative aux investisseurs immobiliers. De part son économie, sa culture, sa proximité avec Lyon (1h), cette métropole à l’attractivité grandissante constitue sans nul doute un excellent placement.\n\n\nTRÈS BELLE OPPORTUNITÉ À SAISIR !\n\n\nVenez visiter ce bel appartement situé à Saint-Étienne À 2 pas du quartier Bellevue dans un secteur calme proche des transports et en commun et des commodités.\n\n Joli T5 de 126 m² en excellent état et très bien entretenu sur 3 niveaux R+2 (avec un très fort potentiel locatif pour une collocation étudiante).\n\n\nVente en viager occupé au profit d’un homme de 70 ans avec réserve de droit d’usage et d’habitation.\n\nDans une zone où le prix au m² est habituellement d'environ 1200 €/m², je vous propose d'acquérir ce bien pour 500 €/m², assurant ainsi un investissement maîtrisé sur une période estimée entre 13 et 18 ans.\n\n \n • Valeur du bien : 124 142€\n • Décote : -49% = -61 326€\n • Prix d'achat : 62 816€\n\n\n\n- Pas de Bouquet seulement un apport des frais d’agence de 13 035€\n- Rente mensuelle de 359 €\n\n\nOpération à PLUS VALUE GARANTIE //\n\n\nVous bénéficiez d’une réduction immédiate de 49 % et les frais de notaire réduits.\n\nUn viager occupé permet l'acquisition d'un bien immobilier à prix réduit, sans recours à un crédit bancaire.\n\n\nCet bel investissement en viager occupé présente les avantages :\n\n* d’un apport minime de seulement 13 035€\n* des frais de notaire réduits,\n* aucune contrainte de gestion locative,\n* zéro risque d'impayé,\n* aucune fiscalité.",
+                    "Valid": true
+                },
+                "annonce_titre": {
+                    "String": "Viager occupé - 127m² - ST ETIENNE(42100) - Homme - 70 ans",
+                    "Valid": true
+                },
+                "mandat_vlb": 124142,
+                "mandat_bouquet_fai": {
+                    "Int64": 13035,
+                    "Valid": true
+                },
+                "mandat_bouquet_fai_percent": {
+                    "Float64": 11,
+                    "Valid": true
+                },
+                "mandat_rente": {
+                    "Int64": 359,
+                    "Valid": true
+                },
+                "mandat_rente_percent": {
+                    "Float64": 40,
+                    "Valid": true
+                },
+                "mandat_loyer": {
+                    "Int64": 0,
+                    "Valid": false
+                },
+                "mandat_frais_agence": 13035,
+                "mandat_frais_agence_percent": 10.5,
+                "mandat_valeur_occupee": {
+                    "Int64": 62816,
+                    "Valid": true
+                },
+                "mandat_decote": 61326,
+                "mandat_decote_percent": 49,
+                "mandat_taux_liberation": 0.29,
+                "mandat_terme_occupation": {
+                    "Int64": 0,
+                    "Valid": true
+                },
+                "mandat_terme_paiement": {
+                    "Int64": 0,
+                    "Valid": true
+                },
+                "mandat_terme_occupation_a_vie": {
+                    "Bool": false,
+                    "Valid": true
+                },
+                "mandat_date_modif": "2024-02-16",
+                "vente_status": "à la vente",
+                "vendu": false,
+                "annonce_img_0_filename_size_full": {
+                    "String": "422342064-aa5952bd3c65d0ae20361dd8-81738802.jpg",
+                    "Valid": true
+                },
+                "old_annonce_id": {
+                    "Float64": 0,
+                    "Valid": false
+                },
+                "esperance_min": 14,
+                "esperance_max": 18,
+                "vlb_displayed": 124142,
+                "valeur_occupee_displayed": {
+                    "Int64": 62816,
+                    "Valid": true
+                },
+                "location_is_approximate": false,
+                "video_url_poster_previsite": {
+                    "String": "",
+                    "Valid": false
+                },
+                "video_url_iframe_previsite": {
+                    "String": "",
+                    "Valid": false
+                },
+                "url_path_alternative": "/acheter/loire-42/saint-etienne/appartement-5pieces-422342064",
+                "url_facebook_share": "http://www.facebook.com/dialog/feed?app_id=1464900177112333&display=popup&link=https%3A%2F%2Fwww.costes-viager.com%2Facheter%2Floire-42%2Fsaint-etienne%2Fappartement-5pieces-422342064",
+                "url_twitter_share": "https://twitter.com/share?hashtags=viager%2Cimmobilier%2Cinvestissement&lang=fr&text=Viager+occup%C3%A9%C2%A0%E2%8B%85%C2%A0Saint-Etienne%C2%A0%2842100%29&url=https%3A%2F%2F%2F_d%2F422342064&via=costesviager",
+                "url_departement_page": "/acheter/annonces/departement/loire-42",
+                "url_region_page": "",
+                "url_commune_page": "",
+                "prix_achat": 62816,
+                "cityscan_address_activated": {
+                    "Bool": false,
+                    "Valid": false
+                },
+                "procedure": {
+                    "String": "",
+                    "Valid": false
+                }
+            }
+        ],
+        "extendedQuery": {
+            "wantLibre": false,
+            "wantOccupe": false,
+            "wantATerme": false,
+            "wantNuePropriete": false,
+            "bien_type_id": -1,
+            "bouquet": {
+                "min": 0,
+                "max": -1
+            },
+            "rente": {
+                "min": 0,
+                "max": -1
+            },
+            "where": [],
+            "sqlQuery": {
+                "id": 0,
+                "dossierId": [
+                    422342064
+                ],
+                "mandatIds": null,
+                "orderBy": {},
+                "limit": 50,
+                "offset": 0,
+                "ignoreDossierIds": []
+            },
+            "getLabelsFor": null,
+            "IsFullyExtendedSearch": false,
+            "IsExtendedSearch": false,
+            "options": {
+                "forceCount": true
+            }
+        },
+        "total": 1
+    }
+}
