@@ -58,10 +58,14 @@ classe_energetique = st.selectbox(
     "Classe énergétique", ["A", "B", "C", "D", "E", "F", "G"], index=3
 )
 
+argent_par_mois = st.number_input(
+    "Argent disponible par mois (en €)", min_value=0, value=500
+)
 
 critères_selection = {
     "bien_surf_habitable.Int64": surface_minimale,
     "prix_achat": prix_maximal,
+    "argent_par_mois": argent_par_mois,
     "bien_nb_piece.Int64": nombre_pieces_minimal,
     "bien_annee_construction.String": annee_construction_minimale,
     "bien_dpe.String": classe_energetique,
@@ -100,6 +104,7 @@ def filtrer_annonces(annonces, critères):
         age_min_occupant = min(tete1_age, tete2_age) if tete2_age != 0 else tete1_age
         if (
             surface >= critères["bien_surf_habitable.Int64"]
+            and annonce["mandat_rente"]["Int64"] <= critères["argent_par_mois"]
             and annonce["mandat_bouquet_fai"]["Int64"] <= critères["prix_achat"]
             and nb_pieces >= critères["bien_nb_piece.Int64"]
             and (
@@ -120,7 +125,6 @@ def filtrer_annonces(annonces, critères):
                     + (
                         (
                             annonce["bien_taxe_fonciere"]["Int64"]
-                            + annonce["bien_ordure_menagere"]["Int64"]
                         )
                         * max(annees, 0)
                     )
@@ -131,12 +135,13 @@ def filtrer_annonces(annonces, critères):
 
             res = {
                 **rentabilites,
+                "mandat_bouquet": annonce["mandat_bouquet_fai"]["Int64"],
+                "argent_par_mois": annonce["mandat_rente"]["Int64"],
                 "link": "https://www.costes-viager.com"
                 + annonce["url_path_alternative"],
                 "bien_type_label": annonce["bien_type_label"],
                 "bien_surf_habitable": surface,
                 "prix_achat": annonce["prix_achat"],
-                "mandat_bouquet": annonce["mandat_bouquet_fai"]["Int64"],
                 "prix estimation": annonce["vlb_displayed"],
                 "decote": annonce["mandat_decote_percent"],
                 "ordures_menageres": annonce["bien_ordure_menagere"]["Int64"],
