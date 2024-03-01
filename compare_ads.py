@@ -124,7 +124,8 @@ def filtrer_annonces(annonces, critères, age_rentabilite):
 
                 cout_total = (
                     annonce["mandat_bouquet_fai"]["Int64"]
-                    + annonce["mandat_frais_agence"]
+                    # + annonce["mandat_frais_agence"]
+                    + annonce["prix_achat"] * 0.08 # frais de notaire
                     + (annonce["mandat_rente"]["Int64"] * mois)
                     + (
                         (
