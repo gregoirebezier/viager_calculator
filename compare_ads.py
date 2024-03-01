@@ -62,7 +62,7 @@ argent_par_mois = st.number_input(
     "Argent disponible par mois (en €)", min_value=0, value=500
 )
 
-age_rentabilite = st.number_input("Âge pour évaluer la rentabilité", min_value=75, max_value=100, value=100, step=1)
+age_rentabilite = st.number_input("Âge pour évaluer la rentabilité", min_value=75, max_value=130, value=100, step=1)
 
 critères_selection = {
     "bien_surf_habitable.Int64": surface_minimale,
