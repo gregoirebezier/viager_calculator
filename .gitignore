@@ -2,3 +2,4 @@
 txt_files/dossiers_ids.txt
 *.html
 *.xml
+.venv

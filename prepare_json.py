@@ -1,30 +1,28 @@
-# /usr/bin/env python3
+#!/usr/bin/env python3
 import json
-import os
 import hashlib
+from pathlib import Path
 import requests
+import threading
 from decouple import config
 import xmltodict
-import threading
 from concurrent.futures import ThreadPoolExecutor
 
 sitemap_index_url = "https://www.costes-viager.com/sitemap.xml"
-save_dir = "sitemaps"
-
+save_dir = Path("sitemaps")
 
 HEADERS = {
     "Host": "www.costes-viager.com",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.63 Safari/537.36",  # noqa
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.63 Safari/537.36",
     "Accept-Encoding": "gzip, deflate",
     "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
     "Accept": "*/*",
     "Connection": "close",
 }
 
-
-PROXY_SERVER = config("PROXY_SERVER")
+PROXY_SERVER = config("PROXY_SERVER", default=None)
 PROXIES = {"http": PROXY_SERVER, "https": PROXY_SERVER}
-json_lock = threading.Lock()
+json_locker = threading.Lock()
 
 
 def hash_file(filepath):
@@ -37,41 +35,39 @@ def hash_file(filepath):
 
 
 def compare_and_download_sitemap(url, save_path):
-    """Compare et télécharge le sitemap si différent, puis extrait les URLs nouvelles."""
-    new_sitemap_path = save_path + "_new"
+    """Compare et télécharge le sitemap si différent, puis extrait les nouvelles URLs."""
+    new_sitemap_path = save_path.parent / (save_path.stem + "_new" + save_path.suffix)
     download_sitemap(url, new_sitemap_path)
 
-    if os.path.exists(save_path) and hash_file(save_path) == hash_file(new_sitemap_path):
+    if save_path.exists() and hash_file(save_path) == hash_file(new_sitemap_path):
         print("Le sitemap n'a pas changé.")
-        os.remove(new_sitemap_path)
+        new_sitemap_path.unlink()
     else:
         print("Le sitemap a changé. Mise à jour en cours.")
         extract_new_urls(save_path, new_sitemap_path)
-        os.replace(new_sitemap_path, save_path)
+        new_sitemap_path.rename(save_path)
+
 
 def extract_new_urls(old_sitemap_path, new_sitemap_path):
     """Extrait et sauvegarde les nouvelles URLs."""
-    old_urls = set()
-    new_urls = set()
+    old_urls, new_urls = set(), set()
 
-    if os.path.exists(old_sitemap_path):
-        with open(old_sitemap_path, "r") as file:
+    if old_sitemap_path.exists():
+        with old_sitemap_path.open("r") as file:
             old_sitemap = xmltodict.parse(file.read())
-            for url in old_sitemap["urlset"]["url"]:
-                old_urls.add(url["loc"])
+            old_urls.update(url["loc"] for url in old_sitemap["urlset"]["url"])
 
-    with open(new_sitemap_path, "r") as file:
+    with new_sitemap_path.open("r") as file:
         new_sitemap = xmltodict.parse(file.read())
-        for url in new_sitemap["urlset"]["url"]:
-            new_urls.add(url["loc"])
+        new_urls.update(url["loc"] for url in new_sitemap["urlset"]["url"])
 
     added_urls = new_urls - old_urls
     if added_urls:
-        with open("txt_files/new_urls.txt", "w") as file:
+        with Path("txt_files/new_urls.txt").open("w") as file:
             for url in added_urls:
                 if "pieces-" in url:
                     urls_id = url.split("pieces-")[1]
-                    file.write(urls_id + "\n")
+                    file.write(f"{urls_id}\n")
         print(f"{len(added_urls)} nouvelles URLs ont été ajoutées.")
 
 
@@ -100,35 +96,34 @@ def get_ad_infos(dossier_id):
         "bien_type_id": -1,
         "options": {"forceCount": True},
     }
-    header = {
-        "Content-Type": "application/json",
-    }
+    header = {"Content-Type": "application/json"}
+
     response = requests.post(
         "https://www.costes-viager.com/api_se/annonces2",
         json=query,
         headers=header,
-        # proxies=PROXIES,
     )
-    with json_lock:
-        json_r = response.json()
-        with open("json_files/all_ads.json", "a") as f:
+
+    json_r = response.json()
+    with json_locker:
+        with Path("json_files/all_ads.json").open("a") as f:
             json.dump(json_r, f, ensure_ascii=False)
             f.write("\n")
+        print(f"Annonce {dossier_id} récupérée.")
     return json_r
 
 
 def download_sitemap(url, save_path):
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    if not save_path.startswith("sitemaps"):
-        return
-    if os.path.exists(save_path):
+    save_dir.mkdir(exist_ok=True)
+    if save_path.exists():
         print(f"Le fichier {save_path} existe déjà. Téléchargement annulé.")
         return
 
-    response = requests.get(url, headers=HEADERS, proxies=PROXIES)
+    response = requests.get(
+        url, headers=HEADERS, proxies=PROXIES if PROXY_SERVER else None
+    )
     if response.status_code == 200:
-        with open(save_path, "wb") as file:
+        with save_path.open("wb") as file:
             file.write(response.content)
         print(f"Sitemap téléchargé et sauvegardé à {save_path}")
     else:
@@ -136,46 +131,50 @@ def download_sitemap(url, save_path):
 
 
 def parse_sitemap(save_path):
-    with open(save_path, "r") as file:
+    with save_path.open("r") as file:
         sitemap = xmltodict.parse(file.read())
     for sitemap in sitemap["urlset"]["url"]:
         if "pieces-" in sitemap["loc"]:
-            with open("txt_files/dossiers_ids.txt", "a") as file:
+            with Path("txt_files/dossiers_ids.txt").open("a") as file:
                 file.write(sitemap["loc"].split("pieces-")[1] + "\n")
 
 
 def keep_unique_ads():
-    with open("txt_files/dossiers_ids.txt", "r") as file:
-        urls = file.readlines()
-    urls = list(set(urls))
-    with open("txt_files/dossiers_ids.txt", "w") as file:
+    dossier_ids_path = Path("txt_files/dossiers_ids.txt")
+    with dossier_ids_path.open("r") as file:
+        urls = set(file.readlines())
+    with dossier_ids_path.open("w") as file:
         file.writelines(urls)
 
 
+def full_reset_scrap():
+    Path("txt_files/new_urls.txt").write_text("")
+    Path("txt_files/dossiers_ids.txt").write_text("")
+    Path("json_files/all_ads.json").write_text("")
+    Path("json_files/unique_ads.json").write_text("")
+    Path("sitemaps/sitemap.xml").unlink()
+
+
 def main():
-    compare_and_download_sitemap(sitemap_index_url, "sitemaps/sitemap.xml")
-    parse_sitemap("sitemaps/sitemap.xml")
+    if config("FULL_RESET_SCRAP", default=False, cast=bool):
+        full_reset_scrap()
+    compare_and_download_sitemap(sitemap_index_url, save_dir / "sitemap.xml")
+    parse_sitemap(save_dir / "sitemap.xml")
     keep_unique_ads()
-    urls = []
-    temp = 0
-    with open("txt_files/new_urls.txt", "r") as file:
-        urls = file.readlines()
-        temp = 1
+
+    with Path("txt_files/new_urls.txt").open("r") as file:
+        urls = [url.strip() for url in file.readlines()]
+
     if not urls:
-        with open("txt_files/dossiers_ids.txt", "r") as file:
-            urls = file.readlines()
-        return 0 # On a déjà téléchargé les annonces
+        with Path("txt_files/dossiers_ids.txt").open("r") as file:
+            urls = [url.strip() for url in file.readlines()]
+        return
+
     with ThreadPoolExecutor() as executor:
-        for dossier_id in urls:
-            dossier_id = int(dossier_id.replace("\n", "").strip())
-            executor.submit(get_ad_infos, dossier_id)
-        executor.shutdown(wait=True)
-    if temp == 1:
-        open("txt_files/new_urls.txt", "w").close()
-        with open("txt_files/dossiers_ids.txt", "a") as file:
-            for url in urls:
-                file.write(url.replace("\n", "").strip() + "\n")
-    print("Toutes les annonces ont été téléchargées.")
+        executor.map(get_ad_infos, map(int, urls))
+
+    Path("txt_files/new_urls.txt").write_text("")
+
 
 if __name__ == "__main__":
     main()
